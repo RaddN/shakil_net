@@ -236,6 +236,7 @@ class _MoreVideoListState extends State<MoreVideoList> {
             },),
         ),
         NextPageTokenid==null?ElevatedButton(onPressed: () {
+          Navigator.pop(context);
           Navigator.push(context, MaterialPageRoute(builder: (context) => PlayListVideoPlay(Banner_DocumentId: widget.Banner_DocumentId),));
         }, child: Text('Back')):
             ElevatedButton(onPressed: () {

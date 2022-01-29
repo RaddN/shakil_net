@@ -22,8 +22,9 @@ class _SncSplashScreenState extends State<SncSplashScreen> {
   @override
   Widget build(BuildContext context) {
     var screenwidth = MediaQuery.of(context).size.width;
-    return Container(
-      child: SvgPicture.asset(screenwidth<480?'assets/svg/Splash Screen.svg':'assets/svg/Splashscreenbigscreen.svg',width: screenwidth,),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SvgPicture.asset(screenwidth<480?'assets/svg/Splash Screen.svg':'assets/svg/Splashscreenbigscreen.svg',width: screenwidth,),
     );
   }
 }

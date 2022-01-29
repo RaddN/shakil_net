@@ -52,6 +52,7 @@ dependencies:
   youtube_player_flutter: ^8.0.0
   http: ^0.13.4
   firebase_auth: ^3.3.6
+  animated_radial_menu: ^0.0.1
 
   
 dev_dependencies:

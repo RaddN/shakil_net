@@ -2,10 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finaltestfirebase/SearchPage.dart';
 import 'package:finaltestfirebase/catamovielist.dart';
 import 'package:finaltestfirebase/inputdata.dart';
+import 'package:finaltestfirebase/profile.dart';
 import 'package:finaltestfirebase/sncvideoplayer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'basic_home_signin_signup/signin.dart';
 import 'firebase_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -14,6 +17,7 @@ import 'splash_screen/splash_screen.dart';
 import 'video_play_details/live_tv_play.dart';
 import 'webViewPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:animated_radial_menu/animated_radial_menu.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -36,6 +40,7 @@ class _SncMainState extends State<SncMain> {
   var dropdowntext = 4;
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   var Storage;
+  var UID;
   @override
   void initState() {
     // TODO: implement initState
@@ -46,9 +51,14 @@ class _SncMainState extends State<SncMain> {
       if (user == null) {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SingIn(),));
       } else {
-        print('User is signed in!');
+        setState(() {
+          UID = user.uid;
+        });
       }
     });
+  }
+  void _launchURL(_url) async {
+    if (!await launch(_url)) throw 'Could not launch $_url';
   }
   @override
   Widget build(BuildContext context) {
@@ -95,12 +105,12 @@ class _SncMainState extends State<SncMain> {
                   value: 4,
                 ),
                 DropdownMenuItem(
-                  child: Text('Profile'),
+                  child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(context, CupertinoPageRoute(builder: (context) => SncMyprofile(),));
+                      }, child: Text('Profile')),
                   value: 1,
-                ),
-                DropdownMenuItem(
-                  child: Text('Settings'),
-                  value: 2,
                 ),
                 DropdownMenuItem(
                   onTap: () async {
@@ -138,7 +148,14 @@ class _SncMainState extends State<SncMain> {
                           ));
                     },
                   ),
-                  Expanded(flex: 9, child: MenuItem())
+                  Expanded(flex: 9, child: MenuItem()),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Powered by'),
+                      TextButton(onPressed: () => _launchURL('https://3tzk6dnkrez1ratymnroag-on.drv.tw/www.mywebsite.com/'), child: Text('Raihan Hossain'))
+                    ],
+                  )
                 ],
               ),
             )
@@ -148,6 +165,7 @@ class _SncMainState extends State<SncMain> {
         if (snapshot.maxWidth < 480) {
           return ListView(
             children: [
+             UID=='G19JlJ5MQ1f5Manhp8eYelR85Sl1'?
               ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -156,7 +174,7 @@ class _SncMainState extends State<SncMain> {
                           builder: (context) => InputData(),
                         ));
                   },
-                  child: Text('Input Data')),
+                  child: Text('Input Data')):Container(),
               Slider(HeightSnc: 200.0),
               Titlebar(TitleText: 'Category'),
               GridviewMovieTv(
@@ -187,6 +205,7 @@ class _SncMainState extends State<SncMain> {
           //for tab
           return ListView(
             children: [
+              UID=='G19JlJ5MQ1f5Manhp8eYelR85Sl1'?
               ElevatedButton(
                   onPressed: () {
                     Navigator.push(
@@ -195,7 +214,7 @@ class _SncMainState extends State<SncMain> {
                           builder: (context) => InputData(),
                         ));
                   },
-                  child: Text('Input Data')),
+                  child: Text('Input Data')):Container(),
               Slider(HeightSnc: 200.0),
               Titlebar(TitleText: 'Category'),
               GridviewMovieTv(
@@ -224,6 +243,38 @@ class _SncMainState extends State<SncMain> {
           return DesktopMode();
         }
       }),
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: RadialMenu(
+                children: [
+                  RadialButton(
+                    icon: Icon(Icons.call),
+                    onPress: () => _launchURL('tel:+8801990976001'),
+                    buttonColor: Colors.blue
+                  ),
+                  RadialButton(
+                    icon: Icon(Icons.call),
+                    onPress: () => _launchURL('tel:+8801863995432'),
+                  ),
+                  RadialButton(
+                    buttonColor: Colors.blue,
+                    icon: Icon(FontAwesomeIcons.facebookMessenger),
+                    onPress: () => _launchURL('https://m.me/ShakilNetCorporation'),
+                  ),
+                  RadialButton(
+                    buttonColor: Colors.green,
+                    icon: Icon(FontAwesomeIcons.whatsapp),
+                    onPress: () => _launchURL('https://wa.me/+8801863995432'),
+                  ),
+
+                ]
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -232,7 +283,9 @@ class DesktopMode extends StatelessWidget {
   const DesktopMode({
     Key? key,
   }) : super(key: key);
-
+  void _launchURL(_url) async {
+    if (!await launch(_url)) throw 'Could not launch $_url';
+  }
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -243,6 +296,13 @@ class DesktopMode extends StatelessWidget {
               children: [
                 ListTile(title: Text('Home'), leading: Icon(Icons.home)),
                 Expanded(child: MenuItem()),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Powered by'),
+                    TextButton(onPressed: () => _launchURL('https://3tzk6dnkrez1ratymnroag-on.drv.tw/www.mywebsite.com/'), child: Text('Raihan Hossain'))
+                  ],
+                )
               ],
             )),
         Expanded(
@@ -282,7 +342,9 @@ class DesktopMode extends StatelessWidget {
 class MenuItem extends StatelessWidget {
   CollectionReference usersStream =
       FirebaseFirestore.instance.collection('Category');
-
+  void _launchURL(_url) async {
+    if (!await launch(_url)) throw 'Could not launch $_url';
+  }
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<QuerySnapshot>(
@@ -301,6 +363,9 @@ class MenuItem extends StatelessWidget {
                 document.data()! as Map<String, dynamic>;
             return ListTile(
               onTap: () {
+                if(data['type']=='webLink'){
+                  _launchURL(data['WebsiteUrl']);
+                }
                 Navigator.pop(context);
                 Navigator.push(
                     context,
@@ -535,6 +600,9 @@ class Slider extends StatelessWidget {
   Slider({Key? key, this.HeightSnc}) : super(key: key);
   final Stream<QuerySnapshot> _usersStream =
       FirebaseFirestore.instance.collection('Slider_banner').snapshots();
+  void _launchURL(_url) async {
+    if (!await launch(_url)) throw 'Could not launch $_url';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -555,21 +623,27 @@ class Slider extends StatelessWidget {
             items: documents.map((data) {
               return InkWell(
                   onTap: () {
-                    data['Type'] == 'web'
-                        ? Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WebViewSnc(
-                                WebUrl: data['WebsiteUrl'],
-                              ),
-                            ))
-                        : Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SncLiveTvPlay(
-                                VideoUrl: data['WebsiteUrl'],
-                              ),
-                            ));
+                    if(data['Type'] == 'webLink'){
+                      _launchURL(data['WebsiteUrl']);
+                    }else {
+                      data['Type'] == 'web'
+                          ? Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                WebViewSnc(
+                                  WebUrl: data['WebsiteUrl'],
+                                ),
+                          ))
+                          : Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                SncLiveTvPlay(
+                                  VideoUrl: data['WebsiteUrl'],
+                                ),
+                          ));
+                    }
                   },
                   child: Container(
                       alignment: Alignment.bottomCenter,

@@ -1,5 +1,7 @@
 
+import 'package:finaltestfirebase/profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -62,8 +64,11 @@ class _WebViewSncState extends State<WebViewSnc> {
                 DropdownMenuItem(child: CircleAvatar(
                   backgroundImage: NetworkImage('https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'),
                 ),value: 4,),
-                DropdownMenuItem(child: Text('Profile'),value: 1,),
-                DropdownMenuItem(child: Text('Settings'),value: 2,),
+                DropdownMenuItem(child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, CupertinoPageRoute(builder: (context) => SncMyprofile(),));
+                    }, child: Text('Profile')),value: 1,),
                 DropdownMenuItem(
                   onTap: () async {
                     await FirebaseAuth.instance.signOut();
