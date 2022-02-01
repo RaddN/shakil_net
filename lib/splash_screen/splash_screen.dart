@@ -24,7 +24,7 @@ class _SncSplashScreenState extends State<SncSplashScreen> {
     var screenwidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SvgPicture.asset(screenwidth<480?'assets/svg/Splash Screen.svg':'assets/svg/Splashscreenbigscreen.svg',width: screenwidth,),
+      body: Center(child: SvgPicture.asset(screenwidth<480?'assets/svg/Splash Screen.svg':'assets/svg/Splashscreenbigscreen.svg',width: screenwidth,)),
     );
   }
 }

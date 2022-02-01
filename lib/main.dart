@@ -1,14 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:finaltestfirebase/SearchPage.dart';
 import 'package:finaltestfirebase/catamovielist.dart';
 import 'package:finaltestfirebase/inputdata.dart';
-import 'package:finaltestfirebase/profile.dart';
 import 'package:finaltestfirebase/sncvideoplayer.dart';
+import 'package:finaltestfirebase/widget/mywidgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'basic_home_signin_signup/signin.dart';
 import 'firebase_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -41,6 +39,24 @@ class _SncMainState extends State<SncMain> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   var Storage;
   var UID;
+  var Userinfo;
+  var AccountActivity;
+  // CollectionReference usersStream =
+  // FirebaseFirestore.instance.collection('User');
+  void UserInfo(){
+    FirebaseFirestore.instance
+        .collection('User')
+        .get()
+        .then((QuerySnapshot querySnapshot) {
+      querySnapshot.docs.forEach((data) {
+        if(data['uid']==UID){
+          setState(() {
+            Userinfo = data;
+            AccountActivity = data['Activity'];
+          });}
+      });
+    });
+  }
   @override
   void initState() {
     // TODO: implement initState
@@ -49,116 +65,45 @@ class _SncMainState extends State<SncMain> {
         .authStateChanges()
         .listen((User? user) {
       if (user == null) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SingIn(),));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SingIn(Redialmenu: Redialmenu,),));
       } else {
         setState(() {
           UID = user.uid;
         });
       }
     });
+    UserInfo();
   }
-  void _launchURL(_url) async {
-    if (!await launch(_url)) throw 'Could not launch $_url';
+  void AlertMessage(){
+    if(AccountActivity!='Active'){
+      showDialog(
+        barrierDismissible:AccountActivity!='Inactive'?true:false,
+        context: context,
+        builder: (context) => SimpleDialog(
+          alignment: Alignment.center,
+          title: Text('ইন্টারনেট বিল সংক্রান্ত নোটিস',textAlign: TextAlign.center,style: TextStyle(
+            color: Colors.red
+          ),),
+          children: [
+            Text(AccountActivity!='Inactive'?'আপনার ইন্টারনেট বিল পরিশোধ করুন।':'আপনার ইন্টারনেট বিলের মেয়াদ শেষ। Apps ব্যবহার করতে, আপনার ইন্টারনেট বিল পরিশোধ করুন। ',textAlign: TextAlign.center,),
+            SizedBox(height: 15,),
+            Text('Bkash: 01913174775',textAlign: TextAlign.center,),
+            SizedBox(height: 15,),
+            ElevatedButton(onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+            }, child: Text('Logout'))
+          ],
+        ),);}
   }
   @override
   Widget build(BuildContext context) {
+    Future.delayed(Duration(seconds: 5), () => AlertMessage());
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: _key,
-      appBar: AppBar(
-        leading: screenWidth < 800
-            ? IconButton(
-                onPressed: () {
-                  _key.currentState!.openDrawer();
-                },
-                icon: Icon(Icons.menu))
-            : Container(),
-        title: Text('SNCorporation'),
-        actions: [
-          if (screenWidth < 800)
-            IconButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SearchPage(),
-                      ));
-                },
-                icon: Icon(Icons.search)),
-          IconButton(onPressed: () {}, icon: Icon(Icons.notifications)),
-          SizedBox(
-            width: 20,
-          ),
-          DropdownButton(
-              iconSize: 0.0,
-              underline: Container(),
-              value: dropdowntext,
-              onChanged: (value) {
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => MainScreen(),));
-              },
-              items: [
-                DropdownMenuItem(
-                  child: CircleAvatar(
-                    backgroundImage: NetworkImage(
-                        'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500'),
-                  ),
-                  value: 4,
-                ),
-                DropdownMenuItem(
-                  child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(context, CupertinoPageRoute(builder: (context) => SncMyprofile(),));
-                      }, child: Text('Profile')),
-                  value: 1,
-                ),
-                DropdownMenuItem(
-                  onTap: () async {
-                    await FirebaseAuth.instance.signOut();
-                  },
-                  child: Text('Logout'),
-                  value: 3,
-                ),
-              ]),
-        ],
-      ),
+      appBar: BaseAppBar(Userinfo: Userinfo,mykey: _key,),
       drawer: screenWidth < 800
-          ? Drawer(
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 25,
-                  ),
-                  ListTile(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    leading: Icon(Icons.menu),
-                    title: Text('SNCorporation'),
-                  ),
-                  ListTile(
-                    title: Text('Home'),
-                    leading: Icon(Icons.home),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SncMain(),
-                          ));
-                    },
-                  ),
-                  Expanded(flex: 9, child: MenuItem()),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Powered by'),
-                      TextButton(onPressed: () => _launchURL('https://3tzk6dnkrez1ratymnroag-on.drv.tw/www.mywebsite.com/'), child: Text('Raihan Hossain'))
-                    ],
-                  )
-                ],
-              ),
-            )
+          ? MyDrawer().SncDrawer(context: context, Userinfo: Userinfo, )
           : DrawerController(
               child: Text('data'), alignment: DrawerAlignment.start),
       body: LayoutBuilder(builder: (context, snapshot) {
@@ -175,30 +120,37 @@ class _SncMainState extends State<SncMain> {
                         ));
                   },
                   child: Text('Input Data')):Container(),
-              Slider(HeightSnc: 200.0),
-              Titlebar(TitleText: 'Category'),
+              Slider(HeightSnc: 200.0,Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Category',Userinfo: Userinfo,),
               GridviewMovieTv(
-                  Heightsnc: 300.0, type: "Cata", QueryData: 'Cata'),
-              Titlebar(TitleText: 'Learning'),
+                  Heightsnc: 300.0, type: "Cata", QueryData: 'Cata',Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Learning',Userinfo: Userinfo,),
               TopMovies(
                 sncHeight: 200.0,
                 type: 'Learning',
+                Userinfo: Userinfo,
               ),
-              Titlebar(TitleText: 'Islamic'),
-              TopMovies(sncHeight: 200.0, CategoryName: 'Islamic'),
-              Titlebar(TitleText: 'Live Tv'),
-              GridviewMovieTv(Heightsnc: 300.0, type: 'tv'),
-              Titlebar(TitleText: 'Cartoon'),
-              TopMovies(sncHeight: 200.0, CategoryName: 'Cartoon'),
-              Titlebar(TitleText: 'Playlist'),
+              Titlebar(TitleText: 'Islamic',Userinfo: Userinfo,),
+              TopMovies(sncHeight: 200.0, CategoryName: 'Islamic',
+                Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Live Tv',Userinfo: Userinfo,),
+              GridviewMovieTv(Heightsnc: 300.0, type: 'tv',Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Cartoon',Userinfo: Userinfo,),
+              TopMovies(sncHeight: 200.0, CategoryName: 'Cartoon',
+                Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Playlist',Userinfo: Userinfo,
+              ),
               TopMovies(
                 sncHeight: 200.0,
                 type: 'Playlist',
+
+                Userinfo: Userinfo,
               ),
               Titlebar(
-                TitleText: 'Movies',
+                TitleText: 'Movies',Userinfo: Userinfo,
               ),
-              AllMovies(CrossAxisNum: 2),
+              AllMovies(CrossAxisNum: 2,
+                Userinfo: Userinfo,),
             ],
           );
         } else if (snapshot.maxWidth < 800) {
@@ -215,77 +167,132 @@ class _SncMainState extends State<SncMain> {
                         ));
                   },
                   child: Text('Input Data')):Container(),
-              Slider(HeightSnc: 200.0),
-              Titlebar(TitleText: 'Category'),
+              Slider(HeightSnc: 200.0,Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Category',Userinfo: Userinfo,),
               GridviewMovieTv(
-                  Heightsnc: 300.0, type: "Cata", QueryData: 'Cata'),
-              Titlebar(TitleText: 'Learning'),
+                  Heightsnc: 300.0, type: "Cata", QueryData: 'Cata',Userinfo: Userinfo,
+              ),
+              Titlebar(TitleText: 'Learning',Userinfo: Userinfo,),
               TopMovies(
                 sncHeight: 200.0,
                 type: 'Learning',
+
+                Userinfo: Userinfo,
               ),
-              Titlebar(TitleText: 'Islamic'),
-              TopMovies(sncHeight: 200.0, CategoryName: 'Islamic'),
-              Titlebar(TitleText: 'Live Tv'),
-              GridviewMovieTv(Heightsnc: 300.0, type: 'tv'),
-              Titlebar(TitleText: 'Cartoon'),
-              TopMovies(sncHeight: 200.0, CategoryName: 'Cartoon'),
-              Titlebar(TitleText: 'Playlist'),
+              Titlebar(TitleText: 'Islamic',Userinfo: Userinfo,
+              ),
+              TopMovies(sncHeight: 200.0, CategoryName: 'Islamic',
+                Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Live Tv',Userinfo: Userinfo,),
+              GridviewMovieTv(Heightsnc: 300.0, type: 'tv',
+              Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Cartoon',Userinfo: Userinfo,),
+              TopMovies(sncHeight: 200.0, CategoryName: 'Cartoon',
+                Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Playlist',Userinfo: Userinfo,),
               TopMovies(
                 sncHeight: 200.0,
                 type: 'Playlist',
+
+                Userinfo: Userinfo,
               ),
-              Titlebar(TitleText: 'Movies'),
-              AllMovies(CrossAxisNum: 3)
+              Titlebar(TitleText: 'Movies',Userinfo: Userinfo,),
+              AllMovies(CrossAxisNum: 3,
+                Userinfo: Userinfo,)
             ],
           );
         } else {
           return DesktopMode();
         }
       }),
-      floatingActionButton: Stack(
-        children: [
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: RadialMenu(
-                children: [
-                  RadialButton(
-                    icon: Icon(Icons.call),
-                    onPress: () => _launchURL('tel:+8801990976001'),
-                    buttonColor: Colors.blue
-                  ),
-                  RadialButton(
-                    icon: Icon(Icons.call),
-                    onPress: () => _launchURL('tel:+8801863995432'),
-                  ),
-                  RadialButton(
-                    buttonColor: Colors.blue,
-                    icon: Icon(FontAwesomeIcons.facebookMessenger),
-                    onPress: () => _launchURL('https://m.me/ShakilNetCorporation'),
-                  ),
-                  RadialButton(
-                    buttonColor: Colors.green,
-                    icon: Icon(FontAwesomeIcons.whatsapp),
-                    onPress: () => _launchURL('https://wa.me/+8801863995432'),
-                  ),
+      floatingActionButton: Redialmenu,
+    );
+  }
 
-                ]
-            ),
+  Drawer buildDrawer(BuildContext context) {
+    return Drawer();
+  }
+
+  Stack get Redialmenu {
+    return Stack(
+      children: [
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: RadialMenu(
+              children: [
+                RadialButton(
+                  icon: Icon(Icons.call),
+                  onPress: () => LuncherItems().launchURL('tel:+8801990976001'),
+                  buttonColor: Colors.blue
+                ),
+                RadialButton(
+                  icon: Icon(Icons.call),
+                  onPress: () => LuncherItems().launchURL('tel:+8801863995432'),
+                ),
+                RadialButton(
+                  buttonColor: Colors.blue,
+                  icon: Icon(FontAwesomeIcons.facebookMessenger),
+                  onPress: () => LuncherItems().launchURL('https://m.me/ShakilNetCorporation'),
+                ),
+                RadialButton(
+                  buttonColor: Colors.green,
+                  icon: Icon(FontAwesomeIcons.whatsapp),
+                  onPress: () => LuncherItems().launchURL('https://wa.me/+8801863995432'),
+                ),
+
+              ]
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
+class MyDrawer{
+  Drawer SncDrawer({required context,required Userinfo})=> Drawer(
+      child: Column(
+        children: [
+          SizedBox(
+            height: 25,
+          ),
+          ListTile(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            leading: Icon(Icons.menu),
+            title: Text('SNCorporation'),
+          ),
+          ListTile(
+            title: Text('Home'),
+            leading: Icon(Icons.home),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SncMain(),
+                  ));
+            },
+          ),
+          Expanded(flex: 9, child: MenuItem(Userinfo: Userinfo,)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Powered by'),
+              TextButton(onPressed: () =>LuncherItems().launchURL('https://3tzk6dnkrez1ratymnroag-on.drv.tw/www.mywebsite.com/'), child: Text('Raihan Hossain'))
+            ],
+          )
+        ],
+      ),
+    );
+}
 
 class DesktopMode extends StatelessWidget {
+  final Userinfo;
+
   const DesktopMode({
-    Key? key,
+    Key? key,this.Userinfo
   }) : super(key: key);
-  void _launchURL(_url) async {
-    if (!await launch(_url)) throw 'Could not launch $_url';
-  }
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -295,12 +302,12 @@ class DesktopMode extends StatelessWidget {
             child: Column(
               children: [
                 ListTile(title: Text('Home'), leading: Icon(Icons.home)),
-                Expanded(child: MenuItem()),
+                Expanded(child: MenuItem(Userinfo: Userinfo,)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('Powered by'),
-                    TextButton(onPressed: () => _launchURL('https://3tzk6dnkrez1ratymnroag-on.drv.tw/www.mywebsite.com/'), child: Text('Raihan Hossain'))
+                    TextButton(onPressed: () => LuncherItems().launchURL('https://3tzk6dnkrez1ratymnroag-on.drv.tw/www.mywebsite.com/'), child: Text('Raihan Hossain'))
                   ],
                 )
               ],
@@ -309,28 +316,35 @@ class DesktopMode extends StatelessWidget {
           flex: 8,
           child: ListView(
             children: [
-              Slider(HeightSnc: 340.0),
-              Titlebar(TitleText: 'Category'),
+              Slider(HeightSnc: 340.0,Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Category',Userinfo: Userinfo,),
               GridviewMovieTv(
-                  Heightsnc: 350.0, type: "Cata", QueryData: 'Cata'),
-              Titlebar(TitleText: 'Learning'),
+                  Heightsnc: 350.0, type: "Cata", QueryData: 'Cata',Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Learning',Userinfo: Userinfo,),
               TopMovies(
                 sncHeight: 200.0,
                 type: 'Learning',
+
+                Userinfo: Userinfo,
               ),
-              Titlebar(TitleText: 'Islamic'),
-              TopMovies(sncHeight: 200.0, CategoryName: 'Islamic'),
-              Titlebar(TitleText: 'Live Tv'),
-              GridviewMovieTv(Heightsnc: 350.0, type: 'tv'),
-              Titlebar(TitleText: 'Cartoon'),
-              TopMovies(sncHeight: 200.0, CategoryName: 'Cartoon'),
-              Titlebar(TitleText: 'Playlist'),
+              Titlebar(TitleText: 'Islamic',Userinfo: Userinfo,),
+              TopMovies(sncHeight: 200.0, CategoryName: 'Islamic',
+                Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Live Tv',Userinfo: Userinfo,),
+              GridviewMovieTv(Heightsnc: 350.0, type: 'tv',Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Cartoon',Userinfo: Userinfo,),
+              TopMovies(sncHeight: 200.0, CategoryName: 'Cartoon',
+                Userinfo: Userinfo,),
+              Titlebar(TitleText: 'Playlist',Userinfo: Userinfo,),
               TopMovies(
                 sncHeight: 200.0,
                 type: 'Playlist',
+
+                Userinfo: Userinfo,
               ),
-              Titlebar(TitleText: 'Movies'),
-              AllMovies(CrossAxisNum: 4)
+              Titlebar(TitleText: 'Movies',Userinfo: Userinfo,),
+              AllMovies(CrossAxisNum: 4,
+                Userinfo: Userinfo,)
             ],
           ),
         ),
@@ -340,11 +354,14 @@ class DesktopMode extends StatelessWidget {
 }
 
 class MenuItem extends StatelessWidget {
+  final Userinfo;
+
+
   CollectionReference usersStream =
       FirebaseFirestore.instance.collection('Category');
-  void _launchURL(_url) async {
-    if (!await launch(_url)) throw 'Could not launch $_url';
-  }
+
+   MenuItem({Key? key, this.Userinfo,}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<QuerySnapshot>(
@@ -364,7 +381,7 @@ class MenuItem extends StatelessWidget {
             return ListTile(
               onTap: () {
                 if(data['type']=='webLink'){
-                  _launchURL(data['WebsiteUrl']);
+                  LuncherItems().launchURL(data['WebsiteUrl']);
                 }
                 Navigator.pop(context);
                 Navigator.push(
@@ -372,6 +389,8 @@ class MenuItem extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => CataMovieList(
                         CategoryName: data['Category_Name'],
+                        Userinfo: Userinfo,
+
                       ),
                     ));
               },
@@ -391,7 +410,10 @@ class AllMovies extends StatelessWidget {
   final CrossAxisNum;
   final UsingWhere;
   final QueryData;
-  AllMovies({Key? key, this.CrossAxisNum, this.UsingWhere, this.QueryData})
+  final Userinfo;
+
+
+  AllMovies({Key? key, this.CrossAxisNum, this.UsingWhere, this.QueryData,required this.Userinfo})
       : super(key: key);
 
   @override
@@ -400,6 +422,8 @@ class AllMovies extends StatelessWidget {
       QueryData: QueryData,
       CrossAxisNum: CrossAxisNum,
       UsingWhere: UsingWhere,
+
+      Userinfo: Userinfo,
     );
   }
 }
@@ -408,9 +432,11 @@ class MoviesData extends StatefulWidget {
   final CrossAxisNum;
   final UsingWhere;
   final QueryData;
+  final Userinfo;
+
 
   const MoviesData(
-      {Key? key, this.CrossAxisNum, this.UsingWhere, this.QueryData})
+      {Key? key, this.CrossAxisNum, this.UsingWhere, this.QueryData,required this.Userinfo,})
       : super(key: key);
 
   @override
@@ -461,33 +487,12 @@ class _MoviesDataState extends State<MoviesData> {
                           MaterialPageRoute(
                             builder: (context) => SncVideoPlay(
                               MovieData: data,
+                              Userinfo: widget.Userinfo,
                             ),
                           ));
                     },
-                    child: Card(
-                      color: Colors.grey,
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              data['MovieName'],
-                              style: TextStyle(
-                                  backgroundColor: Colors.black,
-                                  color: Colors.white),
-                            ),
-                            Text(data['Published'],
-                                style: TextStyle(
-                                    backgroundColor: Colors.black,
-                                    color: Colors.white))
-                          ],
-                        ),
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: NetworkImage(data['BannerSrc']))),
-                      ),
-                    ),
+                    child: MovieCard().buildCard(
+                      bannersrc: data['BannerSrc'], name: data['MovieName'],publishedtime: data['Published'],TopCorner: Container()),
                   );
                 }).toList(),
               );
@@ -515,22 +520,28 @@ class TopMovies extends StatelessWidget {
   final CategoryName;
   final type;
   final DocumentId;
-  TopMovies(
-      {this.sncHeight,
-      this.mydata,
-      this.DocumentId,
-      this.CategoryName,
-      this.type});
+  final Userinfo;
+
+
+
+  TopMovies({this.sncHeight,
+    this.mydata,
+    this.DocumentId,
+    this.CategoryName,
+    this.type,
+    required this.Userinfo,
+    });
+
   @override
   Widget build(BuildContext context) {
     Stream<QuerySnapshot> CasterInfo_get = type == null
         ? FirebaseFirestore.instance.collection('All_Movies').where(
-            'Category_Name',
-            arrayContainsAny: [CategoryName]).snapshots()
+        'Category_Name',
+        arrayContainsAny: [CategoryName]).snapshots()
         : FirebaseFirestore.instance
-            .collection('Learning_playlist')
-            .where('Category', arrayContainsAny: [type])
-            .snapshots();
+        .collection('Learning_playlist')
+        .where('Category', arrayContainsAny: [type])
+        .snapshots();
     return SizedBox(
         height: sncHeight,
         child: StreamBuilder<QuerySnapshot>(
@@ -547,45 +558,35 @@ class TopMovies extends StatelessWidget {
 
             return GridView(
               gridDelegate:
-                  SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1),
+              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1),
               scrollDirection: Axis.horizontal,
               children: snapshot.data!.docs.map((DocumentSnapshot document) {
                 Map<String, dynamic> data =
-                    document.data()! as Map<String, dynamic>;
+                document.data()! as Map<String, dynamic>;
                 return InkWell(
                   onTap: () {
                     type == null
                         ? Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SncVideoPlay(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              SncVideoPlay(
                                 MovieData: data,
+
+                                Userinfo: Userinfo,
                               ),
-                            ))
+                        ))
                         : Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PlayListVideoPlay(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PlayListVideoPlay(
                                 Banner_DocumentId: data,
                               ),
-                            ));
+                        ));
                   },
-                  child: Card(
-                    color: Colors.grey,
-                    child: Column(
-                      children: [
-                        Expanded(flex: 8, child: Image.network(data['BannerSrc'])),
-                        SizedBox(height: 10,),
-                        Expanded(flex: 2, child: Text(
-                          data['MovieName'],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12),
-                        ),),
-                      ],
-                    ),
-                  ),
+                  child: MovieCard().buildCard(
+                      bannersrc: data['BannerSrc'], name: data['MovieName'],publishedtime: '',TopCorner: Container()),
                 );
               }).toList(),
             );
@@ -596,13 +597,12 @@ class TopMovies extends StatelessWidget {
 
 class Slider extends StatelessWidget {
   final HeightSnc;
+  final Userinfo;
 
-  Slider({Key? key, this.HeightSnc}) : super(key: key);
+
+  Slider({Key? key, this.HeightSnc,required this.Userinfo,}) : super(key: key);
   final Stream<QuerySnapshot> _usersStream =
       FirebaseFirestore.instance.collection('Slider_banner').snapshots();
-  void _launchURL(_url) async {
-    if (!await launch(_url)) throw 'Could not launch $_url';
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -624,7 +624,7 @@ class Slider extends StatelessWidget {
               return InkWell(
                   onTap: () {
                     if(data['Type'] == 'webLink'){
-                      _launchURL(data['WebsiteUrl']);
+                      LuncherItems().launchURL(data['WebsiteUrl']);
                     }else {
                       data['Type'] == 'web'
                           ? Navigator.push(
@@ -633,6 +633,8 @@ class Slider extends StatelessWidget {
                             builder: (context) =>
                                 WebViewSnc(
                                   WebUrl: data['WebsiteUrl'],
+                                  Userinfo: Userinfo,
+
                                 ),
                           ))
                           : Navigator.push(
@@ -641,6 +643,8 @@ class Slider extends StatelessWidget {
                             builder: (context) =>
                                 SncLiveTvPlay(
                                   VideoUrl: data['WebsiteUrl'],
+
+                                  Userinfo: Userinfo,
                                 ),
                           ));
                     }
@@ -681,6 +685,9 @@ class GridviewMovieTv extends StatelessWidget {
   final ScroolDirection;
   final QueryData;
 
+
+  final Userinfo;
+
   GridviewMovieTv(
       {Key? key,
       this.Heightsnc,
@@ -688,7 +695,9 @@ class GridviewMovieTv extends StatelessWidget {
       this.CrossAxisNum,
       this.type,
       this.ScroolDirection,
-      this.QueryData})
+      this.QueryData,
+
+      required this.Userinfo})
       : super(key: key);
 
   @override
@@ -740,36 +749,32 @@ class GridviewMovieTv extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                SncLiveTvPlay(MovieData: data),
+                                SncLiveTvPlay(MovieData: data,
+                                  Userinfo: Userinfo,),
                           ));
                     }
                   },
                   child: Card(
                     color: Colors.white,
                     child: type == "tv"
-                        ? Container(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(data['name']),
-                                data['WebsiteUrl'] == 'http://tv.fanush.net'
-                                    ? Text(
-                                        'Fast',
-                                        style: TextStyle(
-                                            backgroundColor: Colors.green,
-                                            color: Colors.white),
-                                      )
-                                    : Text('Slow',
-                                        style: TextStyle(
-                                            backgroundColor: Colors.red,
-                                            color: Colors.white)),
-                              ],
-                            ),
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: NetworkImage(data['ImgSrc']))),
-                          )
+                        ? MovieCard().buildCard(
+                        bannersrc: data['ImgSrc'], name: data['name'],publishedtime: '',TopCorner: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        data['WebsiteUrl'] == 'http://tv.fanush.net'
+                            ? Text(
+                          'Fast',
+                          style: TextStyle(
+                              backgroundColor: Colors.green,
+                              color: Colors.white),
+                        )
+                            : Text('Slow',
+                            style: TextStyle(
+                                backgroundColor: Colors.red,
+                                color: Colors.white)),
+                      ],
+                    ),)
                         : InkWell(
                             onTap: () {
                               Navigator.push(
@@ -777,27 +782,15 @@ class GridviewMovieTv extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (context) => CataMovieList(
                                       CategoryName: data['Category_Name'],
+
+                                      Userinfo: Userinfo,
                                     ),
                                   ));
                             },
                             child: Container(
                               child: type == "Cata"
-                                  ? Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        SizedBox(
-                                            width: 80.0,
-                                            child:
-                                                Image.network(data['IconSrc'])),
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        Text(data['Category_Name'])
-                                      ],
-                                    )
+                                  ? MovieCard().buildCard(
+                                  bannersrc: data['IconSrc'], name: data['Category_Name'],publishedtime: '',TopCorner: Container())
                                   : Container(),
                             ),
                           ),
@@ -812,7 +805,10 @@ class GridviewMovieTv extends StatelessWidget {
 
 class Titlebar extends StatelessWidget {
   final TitleText;
-  const Titlebar({Key? key, this.TitleText}) : super(key: key);
+  final Userinfo;
+
+
+  const Titlebar({Key? key, this.TitleText,required this.Userinfo,}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -827,7 +823,7 @@ class Titlebar extends StatelessWidget {
           ),
           TitleText == 'Category' ||
                   TitleText == 'Movies' ||
-                  TitleText == 'TV Channel'
+                  TitleText == 'TV Channel'|| TitleText == 'Learning,Cartoon and Playlist'
               ? Container()
               : InkWell(
                   onTap: () {
@@ -838,6 +834,7 @@ class Titlebar extends StatelessWidget {
                             builder: (context) => SncLiveTvPlay(
                               VideoUrl:
                                   'http://tv.fanush.net/hls/andpictures.m3u8',
+                              Userinfo: Userinfo,
                             ),
                           ));
                     } else if (TitleText == 'Islamic'||TitleText == 'Cartoon') {
@@ -846,6 +843,7 @@ class Titlebar extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => CataMovieList(
                               CategoryName: TitleText,
+                              Userinfo: Userinfo,
                             ),
                           ));
                     }

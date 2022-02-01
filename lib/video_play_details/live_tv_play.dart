@@ -15,8 +15,8 @@ import '../main.dart';
 class SncLiveTvPlay extends StatefulWidget {
   final MovieData;
   final VideoUrl;
-
-  const SncLiveTvPlay({Key? key, this.MovieData,this.VideoUrl}) : super(key: key);
+  final Userinfo;
+  const SncLiveTvPlay({Key? key, this.MovieData,this.VideoUrl,required this.Userinfo}) : super(key: key);
   @override
   _SncLiveTvPlayState createState() => _SncLiveTvPlayState();
 }
@@ -77,16 +77,7 @@ class _SncLiveTvPlayState extends State<SncLiveTvPlay> {
             ),
               buildTabBar(),
               Expanded(
-                child: TabBarView(
-                    children: [
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv"),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Sports'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Movies'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Bangla'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Hindi'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'English'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Cartoon'),
-                    ]),
+                child: buildTabBarView(ScreenHeight),
               ),
             ]
           ),
@@ -129,11 +120,9 @@ class _SncLiveTvPlayState extends State<SncLiveTvPlay> {
                     bottomActions: [
                       CurrentPosition(),
                       ProgressBar(isExpanded: true),
-                      CurrentPosition(),
+                      RemainingDuration(),
+                      PlaybackSpeedButton(),
                       FullScreenButton(),
-
-
-
                     ],
                   ),
                   builder: (context, player) {
@@ -176,17 +165,7 @@ class _SncLiveTvPlayState extends State<SncLiveTvPlay> {
               SizedBox(height: 10,),
               buildTabBar(),
               Expanded(
-                child: TabBarView(
-                    children: [
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv"),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Sports'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Movies'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Bangla'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Hindi'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'English'),
-                      GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Cartoon'),
-
-                    ]),
+                child: buildTabBarView(ScreenHeight),
               ),
             ],
           ),
@@ -194,6 +173,27 @@ class _SncLiveTvPlayState extends State<SncLiveTvPlay> {
       );
       // NOT running on the web! You can check for additional platforms here.
     }
+  }
+
+  TabBarView buildTabBarView(double ScreenHeight) {
+    return TabBarView(
+                  children: [
+                    GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",
+                      Userinfo: widget.Userinfo,),
+                    GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Sports',
+                      Userinfo: widget.Userinfo,),
+                    GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Movies',
+                      Userinfo: widget.Userinfo,),
+                    GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Bangla',
+                      Userinfo: widget.Userinfo,),
+                    GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Hindi',
+                      Userinfo: widget.Userinfo,),
+                    GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'English',
+                      Userinfo: widget.Userinfo,),
+                    GridviewMovieTv(Heightsnc:ScreenHeight-270,ScroolDirection:'vertical',type:"tv",QueryData:'Cartoon',
+                      Userinfo: widget.Userinfo,),
+
+                  ]);
   }
 
   TabBar buildTabBar() {

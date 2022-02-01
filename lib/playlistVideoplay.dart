@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:chewie/chewie.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +12,7 @@ class PlayListVideoPlay extends StatefulWidget {
   final VideoDetails;
   final YtbVideoId;
   final NextPageTokenid;
-  const PlayListVideoPlay({Key? key, this.Banner_DocumentId,this.VideoDetails,this.YtbVideoId,this.NextPageTokenid}) : super(key: key);
+   PlayListVideoPlay({Key? key, this.Banner_DocumentId,this.VideoDetails,this.YtbVideoId,this.NextPageTokenid}) : super(key: key);
 
   @override
   _PlayListVideoPlayState createState() => _PlayListVideoPlayState();
@@ -44,7 +43,6 @@ class _PlayListVideoPlayState extends State<PlayListVideoPlay> {
       deviceOrientationsAfterFullScreen: DeviceOrientation.values,
     );
   }
-
   @override
   Widget build(BuildContext context) {
     String videoId;
@@ -89,12 +87,17 @@ class _PlayListVideoPlayState extends State<PlayListVideoPlay> {
                 bottomActions: [
                   CurrentPosition(),
                   ProgressBar(isExpanded: true),
-                  CurrentPosition(),
+                  RemainingDuration(),
+                  PlaybackSpeedButton(),
                   FullScreenButton(),
                 ],
               ),
               builder: (context, player) {
-                return player;
+                return Column(
+                  children: [
+                    player,
+                  ],
+                );
               },
             ),
           ):
@@ -144,7 +147,7 @@ class _PlayListVideoPlayState extends State<PlayListVideoPlay> {
                             ),
                           ],
                         ),
-                      ),
+                      ) ,
                     );
                   }).toList(),
                 );

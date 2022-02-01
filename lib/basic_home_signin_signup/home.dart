@@ -72,7 +72,7 @@ final onClick;
 
 SingButton({required this.myText, required this.myLinknum,required this.myColornum,this.onClick});
   List myLink = [
-SingIn(),
+
 SignUp(),
   ];
   List MyColor = [

@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/cupertino.dart';
-
 class SncVideoPlay extends StatefulWidget {
   final MovieData;
-
-  const SncVideoPlay({Key? key, this.MovieData}) : super(key: key);
+  final Userinfo;
+  const SncVideoPlay({Key? key, this.MovieData,this.Userinfo,}) : super(key: key);
   @override
   _SncVideoPlayState createState() => _SncVideoPlayState();
 }
@@ -128,8 +127,11 @@ class _SncVideoPlayState extends State<SncVideoPlay> {
           Expanded(
             child: ListView(
               children: [
-                Titlebar(TitleText: 'You may like'),
-                AllMovies(CrossAxisNum:2,UsingWhere:'VideoPlayPage')
+                Titlebar(TitleText: 'You may like',
+
+                  Userinfo: widget.Userinfo,),
+                AllMovies(CrossAxisNum:2,UsingWhere:'VideoPlayPage',
+                  Userinfo: widget.Userinfo,)
               ],
             ),
           ),

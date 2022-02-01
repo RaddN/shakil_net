@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 
 class SingIn extends StatefulWidget {
-  const SingIn({Key? key}) : super(key: key);
+ final Stack Redialmenu;
+   SingIn({Key? key,required this.Redialmenu}) : super(key: key);
 
   @override
   _SingInState createState() => _SingInState();
@@ -16,6 +17,24 @@ class _SingInState extends State<SingIn> {
   final Email = TextEditingController();
   final Password = TextEditingController();
   var showallert='';
+Future<void> Onclick() async {
+  try {
+    UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: '${Email.text}@shakilnet.com',
+        password: Password.text
+    );
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'user-not-found') {
+      setState(() {
+        showallert = 'No user found for that email.';
+      });
+    } else if (e.code == 'wrong-password') {
+      setState(() {
+        showallert = 'Wrong password provided for that user.';
+      });
+    }
+  }
+}
   @override
   void initState() {
     // TODO: implement initState
@@ -50,7 +69,7 @@ class _SingInState extends State<SingIn> {
                    child: TextFormField(
                      controller: Email,
                    decoration: InputDecoration(
-                     hintText: 'Email/phone number/Userid',
+                     hintText: 'Userid',
                      icon: Icon(Icons.alternate_email_outlined),
                      border: OutlineInputBorder(),
                      contentPadding: EdgeInsets.only(right: 15,left: 15),
@@ -69,32 +88,26 @@ class _SingInState extends State<SingIn> {
                         contentPadding: EdgeInsets.only(right: 15,left: 15),
                       ),
                       obscureText: true,
+                      onFieldSubmitted: (value) {
+                        Onclick();
+                      }
                     ),
                   ),
                   Text(showallert.toString()),
                   SizedBox(height: 10,),
-                  ElevatedButton(onPressed: () async {
-                    try {
-                      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-                          email: '${Email.text}@shakilnet.com',
-                          password: Password.text
-                      );
-                    } on FirebaseAuthException catch (e) {
-                      if (e.code == 'user-not-found') {
-                        setState(() {
-                          showallert = 'No user found for that email.';
-                        });
-                      } else if (e.code == 'wrong-password') {
-                        setState(() {
-                          showallert = 'Wrong password provided for that user.';
-                        });
-                      }
-                    }
-                  }, child: Text('Login'))
-                ],
+                  ElevatedButton(onPressed: ()  {
+                    Onclick();
+                  }, child: Text('Login')),
+                  SizedBox(height: 15,),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(15, 0, 15, 15),
+                    child:  Text('যদি আপনার login করার ক্ষেত্রে কোন প্রকার সমস্যা হয় তবে নিচে থাকা মেনুবার থেকে আমাদের কল করুন!'),
+                  )
+                   ],
           ))
         ],
       ),
+      floatingActionButton: widget.Redialmenu,
     );
   }
 }
