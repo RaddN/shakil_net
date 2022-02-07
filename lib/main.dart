@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:finaltestfirebase/catamovielist.dart';
 import 'package:finaltestfirebase/inputdata.dart';
@@ -73,9 +75,10 @@ class _SncMainState extends State<SncMain> {
       }
     });
     UserInfo();
+    Timer(Duration(seconds: 3), () {AlertMessage(); });
   }
   void AlertMessage(){
-    if(AccountActivity!='Active'){
+    if(AccountActivity=='Inactive'||AccountActivity=='Alert'){
       showDialog(
         barrierDismissible:AccountActivity!='Inactive'?true:false,
         context: context,
@@ -89,15 +92,17 @@ class _SncMainState extends State<SncMain> {
             SizedBox(height: 15,),
             Text('Bkash: 01913174775',textAlign: TextAlign.center,),
             SizedBox(height: 15,),
-            ElevatedButton(onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-            }, child: Text('Logout'))
+            Container(
+              margin: EdgeInsets.only(left: 50,right: 50),
+              child: ElevatedButton(onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+              }, child: Text('Logout')),
+            )
           ],
         ),);}
   }
   @override
   Widget build(BuildContext context) {
-    Future.delayed(Duration(seconds: 5), () => AlertMessage());
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       key: _key,
@@ -813,6 +818,7 @@ class Titlebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.cyanAccent,
+      padding: EdgeInsets.only(left: 15,right: 15),
       height: 30,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
